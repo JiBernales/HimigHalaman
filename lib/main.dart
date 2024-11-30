@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'login.dart';
 import 'package:flutter/material.dart';
+import 'myplants.dart';
 
 void main() {
   runApp(const HimigHalamanApp());
@@ -26,8 +26,8 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  double _progressValue = 0.0;
-  late Timer _timer;
+  double _progressValue = 0.0; // Track progress value
+  late Timer _timer; // Timer for progress updates
 
   @override
   void initState() {
@@ -35,31 +35,31 @@ class _LoadingScreenState extends State<LoadingScreen> {
     _startLoading();
   }
 
+  /// Starts the loading animation and navigates when complete
   void _startLoading() {
     _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       setState(() {
-        _progressValue += 0.005; // Increment the progress
+        _progressValue += 0.05; // Increment progress
         if (_progressValue >= 1.0) {
-          _progressValue = 1.0; // Cap the value at 1.0
-          _timer.cancel(); // Stop the timer when the progress completes
-          _navigateToNextScreen(); // Navigate to the next screen
+          _progressValue = 1.0; // Cap at 1.0
+          _timer.cancel(); // Stop the timer
+          _navigateToNextScreen(); // Navigate to next screen
         }
       });
     });
   }
 
+  /// Navigates to the MyPlants screen after loading
   void _navigateToNextScreen() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => MyPlants()),
     );
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer.cancel(); // Cancel timer to avoid leaks
     super.dispose();
   }
 
@@ -68,21 +68,18 @@ class _LoadingScreenState extends State<LoadingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
+          // Background with image and overlay
           Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(
-                    'assets/background.png'), // Replace with your image
+            decoration: BoxDecoration(
+              image: const DecorationImage(
+                image: AssetImage('assets/background.png'), // Replace with valid image path
                 fit: BoxFit.cover,
               ),
+              color: Colors.black.withOpacity(0.5), // Dark overlay for readability
+              backgroundBlendMode: BlendMode.darken,
             ),
           ),
-          // Overlay for darkening background (optional for readability)
-          Container(
-            color: Colors.black.withOpacity(0.5),
-          ),
-          // Content
+          // Content Centered
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -97,11 +94,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // App Icon
+                // App Icon (Replace with your app logo)
                 const CircleAvatar(
                   radius: 50,
-                  backgroundImage: AssetImage(
-                      'assets/icon.png'), // Replace with your app icon
+                  backgroundImage: AssetImage('assets/icon.png'), // Replace with valid image path
                 ),
                 const SizedBox(height: 20),
                 // App Name
@@ -114,11 +110,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                // Determinate Loading Bar
+                // Loading Bar
                 SizedBox(
                   width: 200,
                   child: LinearProgressIndicator(
-                    value: _progressValue, // Set the progress value
+                    value: _progressValue,
                     color: Colors.greenAccent,
                     backgroundColor: Colors.white,
                   ),
@@ -136,26 +132,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        backgroundColor: Colors.green,
-      ),
-      body: const Center(
-        child: Text(
-          'Welcome to Himig Halaman!',
-          style: TextStyle(fontSize: 24),
-        ),
       ),
     );
   }

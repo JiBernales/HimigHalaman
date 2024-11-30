@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'explore.dart';
 
 void main() {
-  runApp(const MyGardenApp());
+  runApp(const MyPlantsPage());
 }
 
-class MyGardenApp extends StatelessWidget {
-  const MyGardenApp({super.key});
+class MyPlantsPage extends StatelessWidget {
+  const MyPlantsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primaryColor: Colors.green),
-      home: MyGardenPage(),
+      home: MyPlants(), // Corrected to reference MyPlants
     );
   }
 }
 
-class MyGardenPage extends StatelessWidget {
+class MyPlants extends StatelessWidget {
   final List<Plant> plants = [
     Plant(
       name: "Spider Plant",
@@ -42,7 +43,7 @@ class MyGardenPage extends StatelessWidget {
     ),
   ];
 
-  MyGardenPage({super.key});
+   MyPlants({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -90,23 +91,22 @@ class MyGardenPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.green.shade300,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.eco),
-            label: "Garden",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt),
-            label: "Capture",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: "Explore",
-          ),
-        ],
+      bottomNavigationBar: NavBar(
+        currentIndex: 0, // Explore Page
+        onTap: (index) {
+          if (index == 0) {
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const PlantScannerPage()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ExplorePage()),
+            );
+          }
+        },
       ),
     );
   }
@@ -173,6 +173,29 @@ class PlantCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// Define the NavBar widget
+class NavBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  const NavBar({super.key, required this.currentIndex, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      currentIndex: currentIndex,
+      selectedItemColor: Colors.green,
+      unselectedItemColor: Colors.grey,
+      onTap: onTap,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.eco), label: "Garden"),
+        BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: "Capture"),
+        BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
+      ],
     );
   }
 }
