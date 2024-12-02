@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'explore.dart';
 import 'camera.dart';
+import 'plant.dart';
 
 void main() {
   runApp(const MyPlantsPage());
@@ -173,6 +174,29 @@ class PlantCard extends StatelessWidget {
             ),
           ],
         ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlantDetailPage(
+                plantName: plant.name,
+                imageUrl: plant.imageUrl,
+                tasks: [
+                  "Water plant",
+                  "Expose to sunlight",
+                  "Fertilize",
+                  "Repot"
+                ],
+                taskStatus: [
+                  plant.waterNeeded, // Use plant-specific attributes
+                  plant.sunlightNeeded,
+                  false,
+                  false,
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
