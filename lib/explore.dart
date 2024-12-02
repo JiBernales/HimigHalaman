@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'myplants.dart';
+import 'camera.dart';
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
@@ -205,32 +206,6 @@ class SettingsPage extends StatelessWidget {
       appBar:
           AppBar(title: const Text("Settings"), backgroundColor: Colors.green),
       body: const Center(child: Text("Settings Page")),
-    );
-  }
-}
-
-class GardenPage extends StatelessWidget {
-  const GardenPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar:
-          AppBar(title: const Text("Garden"), backgroundColor: Colors.green),
-      body: const Center(child: Text("Garden Page")),
-    );
-  }
-}
-
-class PlantScannerPage extends StatelessWidget {
-  const PlantScannerPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: const Text("Plant Scanner"), backgroundColor: Colors.green),
-      body: const Center(child: Text("Plant Scanner Page")),
     );
   }
 }
