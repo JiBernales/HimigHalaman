@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'explore.dart';
+import 'camera.dart';
 
 void main() {
   runApp(const MyPlantsPage());
