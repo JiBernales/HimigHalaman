@@ -39,7 +39,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void _startLoading() {
     _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       setState(() {
-        _progressValue += 0.05; // Increment progress
+        _progressValue += 0.005; // Increment progress
         if (_progressValue >= 1.0) {
           _progressValue = 1.0; // Cap at 1.0
           _timer.cancel(); // Stop the timer
@@ -53,7 +53,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void _navigateToNextScreen() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => MyPlants()),
+      MaterialPageRoute(builder: (context) => const MyPlantsPage()),
     );
   }
 

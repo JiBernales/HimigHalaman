@@ -1,138 +1,177 @@
 import 'package:flutter/material.dart';
-// Camera Screen
-class CameraScreen extends StatefulWidget {
-  const CameraScreen({super.key});
+import 'camera.dart';
+import 'explore.dart';
+import 'myplants.dart';
+import 'navbar.dart';
+import 'settings.dart';
+
+class PlantScannerPage extends StatefulWidget {
+  const PlantScannerPage({super.key});
 
   @override
-  CameraScreenState createState() {
-    return CameraScreenState();
-  }
+  _PlantScannerPageState createState() => _PlantScannerPageState();
 }
 
-class CameraScreenState extends State<CameraScreen> {
-  bool isScanning = false;
+class _PlantScannerPageState extends State<PlantScannerPage> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _scanAnimation;
 
-  // Mock function to simulate fetching plant data
-  Future<Map<String, String>> fetchPlantInfo() async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate network delay
-    return {
-      "name": "Spider Plant",
-      "description":
-      "A low-maintenance plant that improves air quality and thrives in indirect light.",
-      "care": "Water bi-weekly and avoid direct sunlight."
-    };
+  @override
+  void initState() {
+    super.initState();
+    // Create the animation controller for the scanning line
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true); // Repeat the animation to create the back-and-forth effect
+
+    // Create the animation for the scanning line moving up and down
+    _scanAnimation = Tween<Offset>(begin: const Offset(0, -1), end: const Offset(0, 1))
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
-  // Scanning action
-  void scanPlant() async {
-    setState(() {
-      isScanning = true;
-    });
-
-    // Fetch data
-    Map<String, String> plantInfo = await fetchPlantInfo();
-
-    // Ensure the widget is still mounted before updating the state
-    if (mounted) {
-      setState(() {
-        isScanning = false;
-      });
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PlantDetailsPage(plantInfo: plantInfo),
-        ),
-      );
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      body: Stack(
-        children: [
-          // Camera Placeholder
-          Center(
-            child: Image.asset(
-              'assets/Camera.png', // Use second image as camera placeholder
-              fit: BoxFit.cover,
-              height: double.infinity,
-              width: double.infinity,
-            ),
-          ),
-          // Scanning Box
-          Center(
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 3),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          // Capture Button
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(30.0),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(), backgroundColor: Colors.green,
-                  padding: const EdgeInsets.all(20),
-                ),
-                onPressed: isScanning ? null : scanPlant,
-                child: Icon(
-                  isScanning ? Icons.hourglass_empty : Icons.camera,
-                  color: Colors.white,
-                  size: 30,
+      backgroundColor: const Color(0xFFF7FBEA), // Light greenish background
+      body: SafeArea(
+        child: SingleChildScrollView( // Make the entire screen scrollable
+          child: Column(
+            children: [
+              // Header and Search Bar
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with Profile and Settings Icons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.person, size: 30, color: Color(0xFF376F47)),
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.settings, size: 30, color: Color(0xFF376F47)),
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
+              // Placeholder for the scanner UI
+              const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image(image: AssetImage('assets/plant-bg.png'), height: 200), // Display first image as plant scanner UI
+                    Text(
+                      "Use the camera feature to identify a plant instantly",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.green),
+                    ),
+                  ],
+                ),
+              ),
+              // Scanning Effect
+              Stack(
+                children: [
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Image.asset(
+                        'assets/plant-bg.png', // Background image where the line will scan
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  // Scanning line animation
+                  AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      return SlideTransition(
+                        position: _scanAnimation,
+                        child: Container(
+                          width: double.infinity,
+                          height: 2, // Scanning line thickness
+                          color: Colors.white.withOpacity(0.8), // Scanning line color
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              // Capture Button
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CameraScreen()));
+                  },
+                  child: const Text(
+                    "Take a picture!",
+                    style: TextStyle(fontSize: 18),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// Results Page
-class PlantDetailsPage extends StatelessWidget {
-  final Map<String, String> plantInfo;
-
-  const PlantDetailsPage({super.key, required this.plantInfo});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(plantInfo['name']!),
-        backgroundColor: Colors.green,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Name: ${plantInfo['name']}",
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Description:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(plantInfo['description']!),
-            const SizedBox(height: 10),
-            const Text(
-              "Care Instructions:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(plantInfo['care']!),
-          ],
         ),
+      ),
+      bottomNavigationBar: NavBar(
+        currentIndex: 1,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const MyPlantsPage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+                  return SlideTransition(position: offsetAnimation, child: child);
+                },
+              ),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const ExplorePage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+                  return SlideTransition(position: offsetAnimation, child: child);
+                },
+              ),
+            );
+          }
+        },
       ),
     );
   }

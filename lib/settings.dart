@@ -185,6 +185,18 @@ class LanguagePage extends StatelessWidget {
   }
 }
 
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Profile"), backgroundColor: Colors.green),
+      body: const Center(child: Text("Profile Page")),
+    );
+  }
+}
+
 class LocationPage extends StatelessWidget {
   const LocationPage({super.key});
 

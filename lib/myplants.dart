@@ -1,111 +1,151 @@
 import 'package:flutter/material.dart';
-import 'explore.dart';
-import 'camera.dart';
+import 'package:himig_halaman/scanner.dart';
 import 'plant.dart';
+import 'navbar.dart';
+import 'settings.dart';
+import 'explore.dart';
 
-void main() {
-  runApp(const MyPlantsPage());
-}
-
-class MyPlantsPage extends StatelessWidget {
+class MyPlantsPage extends StatefulWidget {
   const MyPlantsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primaryColor: Colors.green),
-      home: MyPlants(), // Corrected to reference MyPlants
-    );
-  }
+  _MyPlantsPageState createState() => _MyPlantsPageState();
 }
 
-class MyPlants extends StatelessWidget {
-  final List<Plant> plants = [
-    Plant(
-      name: "Spider Plant",
-      imageUrl: "https://via.placeholder.com/150",
-      isFavorite: true,
-      waterNeeded: true,
-      sunlightNeeded: true,
-    ),
-    Plant(
-      name: "Fiona",
-      imageUrl: "https://via.placeholder.com/150",
-      isFavorite: false,
-      waterNeeded: true,
-      sunlightNeeded: false,
-    ),
-    Plant(
-      name: "Plant Name#1",
-      imageUrl: "https://via.placeholder.com/150",
-      isFavorite: false,
-      waterNeeded: false,
-      sunlightNeeded: true,
-    ),
-  ];
+class _MyPlantsPageState extends State<MyPlantsPage> {
+  // Method to toggle favorite status
+  void toggleFavorite(Plant plant) {
+    setState(() {
+      plant.isFavorite = !plant.isFavorite;
+    });
+  }
 
-   MyPlants({super.key});
+  // Method to toggle water needed
+  void toggleWaterNeeded(Plant plant) {
+    setState(() {
+      plant.waterNeeded = !plant.waterNeeded;
+    });
+  }
+
+  // Method to toggle sunlight needed
+  void toggleSunlightNeeded(Plant plant) {
+    setState(() {
+      plant.sunlightNeeded = !plant.sunlightNeeded;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7FBEA), // Light green background
       appBar: AppBar(
-        backgroundColor: Colors.green.shade100,
+        backgroundColor: const Color(0xFFF7FBEA),
         elevation: 0,
-        leading: const Icon(Icons.person, color: Colors.green),
+        leading: IconButton(
+          icon: const Icon(Icons.person, size: 30, color: Color(0xFF376F47)),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          },
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.green),
-            onPressed: () {},
+            icon: const Icon(Icons.settings, size: 30, color: Color(0xFF376F47)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
           ),
         ],
-        title: const Text(
-          "My Garden",
-          style: TextStyle(color: Colors.green),
-        ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: "Search",
-                filled: true,
-                fillColor: Colors.green.shade50,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Title
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+              child: Text(
+                "My Garden",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF376F47),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: plants.length,
-              itemBuilder: (context, index) {
-                final plant = plants[index];
-                return PlantCard(plant: plant);
-              },
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "Search",
+                  prefixIcon: const Icon(Icons.search, color: Color(0xFF376F47)),
+                  filled: true,
+                  fillColor: const Color(0xFFEAF3DF),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            // Plants List
+            Expanded(
+              child: ListView.builder(
+                itemCount: plants.length,
+                itemBuilder: (context, index) {
+                  final plant = plants[index];
+                  return PlantCard(
+                    plant: plant,
+                    onFavoriteToggle: () => toggleFavorite(plant),
+                    onWaterToggle: () => toggleWaterNeeded(plant),
+                    onSunlightToggle: () => toggleSunlightNeeded(plant),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: NavBar(
         currentIndex: 0, // Explore Page
         onTap: (index) {
-          if (index == 0) {
-          } else if (index == 1) {
+          if (index == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const PlantScannerPage()),
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                const PlantScannerPage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+                  return SlideTransition(position: offsetAnimation, child: child);
+                },
+              ),
             );
           } else if (index == 2) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const ExplorePage()),
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                const ExplorePage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+                  return SlideTransition(position: offsetAnimation, child: child);
+                },
+              ),
             );
           }
         },
@@ -114,113 +154,133 @@ class MyPlants extends StatelessWidget {
   }
 }
 
-class Plant {
-  final String name;
-  final String imageUrl;
-  final bool isFavorite;
-  final bool waterNeeded;
-  final bool sunlightNeeded;
-
-  Plant({
-    required this.name,
-    required this.imageUrl,
-    required this.isFavorite,
-    required this.waterNeeded,
-    required this.sunlightNeeded,
-  });
-}
-
 class PlantCard extends StatelessWidget {
   final Plant plant;
+  final VoidCallback onFavoriteToggle;
+  final VoidCallback onWaterToggle;
+  final VoidCallback onSunlightToggle;
 
-  const PlantCard({super.key, required this.plant});
+  const PlantCard({
+    super.key,
+    required this.plant,
+    required this.onFavoriteToggle,
+    required this.onWaterToggle,
+    required this.onSunlightToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            plant.imageUrl,
-            height: 50,
-            width: 50,
-            fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlantDetailPage(plant: plant),
           ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEAF3DF),
+          borderRadius: BorderRadius.circular(16),
         ),
-        title: Text(plant.name),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: [
+            // Plant Image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                plant.imagePath,
+                height: 70,
+                width: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Plant Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    plant.plantName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF376F47),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          plant.waterNeeded
+                              ? Icons.water_drop // Full (Water needed)
+                              : Icons.water_drop_outlined, // Empty (No water needed)
+                          color: Colors.blue,
+                        ),
+                        onPressed: onWaterToggle,
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(
+                          plant.sunlightNeeded
+                              ? Icons.wb_sunny
+                              : Icons.wb_sunny_outlined,
+                          color: Colors.orange,
+                        ),
+                        onPressed: onSunlightToggle,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Favorite Icon
             IconButton(
               icon: Icon(
                 plant.isFavorite ? Icons.favorite : Icons.favorite_border,
                 color: plant.isFavorite ? Colors.red : Colors.grey,
               ),
-              onPressed: () {
-                // Handle favorite toggle
-              },
-            ),
-            Icon(
-              plant.waterNeeded ? Icons.opacity : Icons.opacity_outlined,
-              color: Colors.blue,
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              plant.sunlightNeeded ? Icons.wb_sunny : Icons.wb_sunny_outlined,
-              color: Colors.orange,
+              onPressed: onFavoriteToggle,
             ),
           ],
         ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PlantDetailPage(
-                plantName: plant.name,
-                imageUrl: plant.imageUrl,
-                tasks: [
-                  "Water plant",
-                  "Expose to sunlight",
-                  "Fertilize",
-                  "Repot"
-                ],
-                taskStatus: [
-                  plant.waterNeeded, // Use plant-specific attributes
-                  plant.sunlightNeeded,
-                  false,
-                  false,
-                ],
-              ),
-            ),
-          );
-        },
       ),
     );
   }
 }
 
-// Define the NavBar widget
-class NavBar extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  const NavBar({super.key, required this.currentIndex, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      selectedItemColor: Colors.green,
-      unselectedItemColor: Colors.grey,
-      onTap: onTap,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.eco), label: "Garden"),
-        BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: "Capture"),
-        BottomNavigationBarItem(icon: Icon(Icons.explore), label: "Explore"),
-      ],
-    );
-  }
-}
+final List<Plant> plants = [
+  Plant(
+    plantName: "Spider Plant",
+    imagePath: "assets/spider_plant.png",
+    probability: 5.0,
+    waterNeeded: true,
+    sunlightNeeded: true,
+    isFavorite: false,
+    tasks: [
+      "Water daily",
+      "Place in indirect sunlight",
+      "Check for pests weekly"
+    ],
+    taskStatus: [false, false, false],
+  ),
+  Plant(
+    plantName: "Fiona",
+    imagePath: "assets/fiona.png",
+    probability: 80.0,
+    waterNeeded: true,
+    sunlightNeeded: false,
+    isFavorite: false,
+    tasks: [
+      "Water every other day",
+      "Place in shaded area",
+      "Prune monthly"
+    ],
+    taskStatus: [false, false, false],
+  ),
+];

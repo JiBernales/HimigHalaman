@@ -1,131 +1,117 @@
 import 'package:flutter/material.dart';
 
-class PlantDetailPage extends StatelessWidget {
+class Plant {
+  final int? id;
   final String plantName;
-  final String imageUrl;
-  final List<String> tasks;
-  final List<bool> taskStatus;
+  final double probability;
+  final String imagePath;
+  bool waterNeeded;
+  bool sunlightNeeded;
+  bool isFavorite;
+  final List<String> tasks; // Add tasks
+  final List<bool> taskStatus; // Add task status
 
-  const PlantDetailPage({
-    super.key,
+  Plant({
+    this.id,
     required this.plantName,
-    required this.imageUrl,
-    required this.tasks,
-    required this.taskStatus,
+    required this.probability,
+    required this.imagePath,
+    this.waterNeeded = true,
+    this.sunlightNeeded = true,
+    this.isFavorite = false,
+    required this.tasks, // Required tasks
+    required this.taskStatus, // Required task status
   });
+}
+
+class PlantDetailPage extends StatefulWidget {
+  final Plant plant;
+
+  const PlantDetailPage({super.key, required this.plant});
 
   @override
+  _PlantDetailPageState createState() => _PlantDetailPageState();
+}
+
+class _PlantDetailPageState extends State<PlantDetailPage> {
+  @override
   Widget build(BuildContext context) {
+    final plant = widget.plant;
+
     return Scaffold(
-      backgroundColor: Colors.green.shade50,
       appBar: AppBar(
-        backgroundColor: Colors.green.shade50,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.green),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        backgroundColor: Colors.green.shade400,
+        title: Text(plant.plantName),
         actions: [
           IconButton(
-            icon: const Icon(Icons.favorite, color: Colors.red),
+            icon: Icon(
+              plant.isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: Colors.red,
+            ),
             onPressed: () {
-              // Handle favorite toggle logic
+              setState(() {
+                plant.isFavorite = !plant.isFavorite;
+              });
             },
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              plantName,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "To Do",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: tasks.length,
-                        itemBuilder: (context, index) {
-                          return CheckboxListTile(
-                            title: Text(
-                              tasks[index],
-                              style: TextStyle(
-                                fontSize: 16,
-                                decoration: taskStatus[index]
-                                    ? TextDecoration.lineThrough
-                                    : TextDecoration.none,
-                              ),
-                            ),
-                            value: taskStatus[index],
-                            activeColor: Colors.green,
-                            onChanged: (bool? value) {
-                              // Handle task status update
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: () {
-                // Handle plant photo update logic
+            // Plant image
+            Image.asset(
+              plant.imagePath,
+              width: double.infinity,
+              height: 250,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.image_not_supported, size: 100);
               },
-              child: const Text(
-                "Update plant photo",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
+            ),
+            const SizedBox(height: 16),
+            // Task list
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "To Do",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...List.generate(plant.tasks.length, (index) {
+                    return CheckboxListTile(
+                      title: Text(plant.tasks[index]),
+                      value: plant.taskStatus[index],
+                      onChanged: (bool? value) {
+                        setState(() {
+                          plant.taskStatus[index] = value ?? false;
+                        });
+                      },
+                    );
+                  }),
+                ],
+              ),
+            ),
+            // Update plant photo button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  minimumSize: const Size.fromHeight(50),
+                ),
+                onPressed: () {
+                  // Handle update photo logic
+                },
+                child: const Text(
+                  "Update plant photo",
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
             ),
