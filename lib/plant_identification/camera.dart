@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'api_integration.dart';
-import 'plant.dart';
+import '../plant.dart';
 import 'dart:convert';
 
 class CameraScreen extends StatefulWidget {

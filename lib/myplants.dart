@@ -1,105 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:himig_halaman/scanner.dart';
 import 'plant.dart';
 import 'navbar.dart';
-import 'settings.dart';
+import 'plant_identification/scanner.dart';
+import 'profile.dart';
+import 'settings/settings.dart';
 import 'explore.dart';
 
 class MyPlantsPage extends StatefulWidget {
-  const MyPlantsPage({super.key});
+  final List<Plant> initialPlants;
+
+  const MyPlantsPage({
+    super.key,
+    this.initialPlants = const [],
+  });
 
   @override
   _MyPlantsPageState createState() => _MyPlantsPageState();
 }
 
 class _MyPlantsPageState extends State<MyPlantsPage> {
-  // Method to toggle favorite status
-  void toggleFavorite(Plant plant) {
+  late List<Plant> _plants;
+
+  @override
+  void initState() {
+    super.initState();
+    _plants = List.from(widget.initialPlants)..addAll(plants);
+  }
+
+  void addPlant(Plant plant) {
     setState(() {
-      plant.isFavorite = !plant.isFavorite;
+      _plants.add(plant);
     });
   }
 
-  // Method to toggle water needed
   void toggleWaterNeeded(Plant plant) {
     setState(() {
       plant.waterNeeded = !plant.waterNeeded;
     });
   }
 
-  // Method to toggle sunlight needed
   void toggleSunlightNeeded(Plant plant) {
     setState(() {
       plant.sunlightNeeded = !plant.sunlightNeeded;
     });
   }
 
+  void toggleFavorite(Plant plant) {
+    setState(() {
+      plant.isFavorite = !plant.isFavorite;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FBEA), // Light green background
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF7FBEA),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.person, size: 30, color: Color(0xFF376F47)),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ProfilePage()),
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, size: 30, color: Color(0xFF376F47)),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            // Title
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-              child: Text(
-                "My Garden",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF376F47),
-                ),
-              ),
-            ),
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Search",
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF376F47)),
-                  filled: true,
-                  fillColor: const Color(0xFFEAF3DF),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Plants List
+            // Header
+            HeaderSection(),
+            // Plant List
             Expanded(
               child: ListView.builder(
-                itemCount: plants.length,
+                itemCount: _plants.length,
                 itemBuilder: (context, index) {
-                  final plant = plants[index];
+                  final plant = _plants[index];
                   return PlantCard(
                     plant: plant,
                     onFavoriteToggle: () => toggleFavorite(plant),
@@ -113,39 +81,17 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
         ),
       ),
       bottomNavigationBar: NavBar(
-        currentIndex: 0, // Explore Page
+        currentIndex: 0,
         onTap: (index) {
           if (index == 1) {
             Navigator.pushReplacement(
               context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                const PlantScannerPage(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(1.0, 0.0);
-                  const end = Offset.zero;
-                  const curve = Curves.easeInOut;
-                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                  var offsetAnimation = animation.drive(tween);
-                  return SlideTransition(position: offsetAnimation, child: child);
-                },
-              ),
+              MaterialPageRoute(builder: (context) => const PlantScannerPage()),
             );
           } else if (index == 2) {
             Navigator.pushReplacement(
               context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                const ExplorePage(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(1.0, 0.0);
-                  const end = Offset.zero;
-                  const curve = Curves.easeInOut;
-                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                  var offsetAnimation = animation.drive(tween);
-                  return SlideTransition(position: offsetAnimation, child: child);
-                },
-              ),
+              MaterialPageRoute(builder: (context) => const ExplorePage()),
             );
           }
         },
@@ -154,6 +100,58 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
   }
 }
 
+// Header Section Widget
+class HeaderSection extends StatelessWidget {
+  const HeaderSection({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile and Settings Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(Icons.person, size: 40, color: theme.iconTheme.color),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.settings, size: 40, color: theme.iconTheme.color),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsPage()),
+                  );
+                },
+              ),
+            ],
+          ),
+          // Title
+          const Text(
+            "My Garden",
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// PlantCard Widget
 class PlantCard extends StatelessWidget {
   final Plant plant;
   final VoidCallback onFavoriteToggle;
@@ -170,25 +168,24 @@ class PlantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => PlantDetailPage(plant: plant),
-          ),
+          MaterialPageRoute(builder: (context) => PlantDetailPage(plant: plant)),
         );
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFEAF3DF),
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           children: [
-            // Plant Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
@@ -196,20 +193,22 @@ class PlantCard extends StatelessWidget {
                 height: 70,
                 width: 70,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.image_not_supported,
+                  size: 70,
+                  color: theme.iconTheme.color,
+                ),
               ),
             ),
             const SizedBox(width: 12),
-            // Plant Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     plant.plantName,
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF376F47),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -218,8 +217,8 @@ class PlantCard extends StatelessWidget {
                       IconButton(
                         icon: Icon(
                           plant.waterNeeded
-                              ? Icons.water_drop // Full (Water needed)
-                              : Icons.water_drop_outlined, // Empty (No water needed)
+                              ? Icons.water_drop
+                              : Icons.water_drop_outlined,
                           color: Colors.blue,
                         ),
                         onPressed: onWaterToggle,
@@ -239,11 +238,10 @@ class PlantCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Favorite Icon
             IconButton(
               icon: Icon(
                 plant.isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: plant.isFavorite ? Colors.red : Colors.grey,
+                color: plant.isFavorite ? Colors.red : theme.iconTheme.color,
               ),
               onPressed: onFavoriteToggle,
             ),
@@ -253,7 +251,7 @@ class PlantCard extends StatelessWidget {
     );
   }
 }
-
+// Example Plant Data
 final List<Plant> plants = [
   Plant(
     plantName: "Spider Plant",
