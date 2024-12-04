@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'myplants.dart';
-import 'scanner.dart';
-import 'settings.dart';
+import 'plant_identification/scanner.dart';
+import 'profile.dart';
+import 'settings/settings.dart';
 import 'navbar.dart';
 
 class ExplorePage extends StatelessWidget {
@@ -10,7 +11,7 @@ class ExplorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FBEA), // Light greenish background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Dynamic background color
       body: SafeArea(
         child: SingleChildScrollView(  // Make the entire screen scrollable
           child: Column(
@@ -27,8 +28,11 @@ class ExplorePage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.person,
-                              size: 30, color: Color(0xFF376F47)),
+                          icon: Icon(
+                            Icons.person,
+                            size: 40,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -38,8 +42,11 @@ class ExplorePage extends StatelessWidget {
                           },
                         ),
                         IconButton(
-                          icon: const Icon(Icons.settings,
-                              size: 30, color: Color(0xFF376F47)),
+                          icon: Icon(
+                            Icons.settings,
+                            size: 40,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -58,7 +65,6 @@ class ExplorePage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF376F47),
                         ),
                       ),
                     ),
@@ -68,10 +74,12 @@ class ExplorePage extends StatelessWidget {
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: "Search",
-                          prefixIcon: const Icon(Icons.search,
-                              color: Color(0xFF376F47)),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
                           filled: true,
-                          fillColor: const Color(0xFFEAF3DF),
+                          fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
@@ -169,6 +177,7 @@ class ExplorePage extends StatelessWidget {
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         elevation: 2,
+        color: Theme.of(context).cardColor, // Card background based on theme
         child: Column(
           children: [
             // Article Image
@@ -188,17 +197,16 @@ class ExplorePage extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF376F47),
+                        color: Theme.of(context).textTheme.bodyLarge?.color, // Dynamic text color
                       ),
                     ),
                   ),
                   // Read Button
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFBFE7A7), // Light green
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

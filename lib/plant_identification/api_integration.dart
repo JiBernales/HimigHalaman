@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'web-scraping.dart';
-import 'plant.dart';
+import '../plant.dart';
 
 class APIIntegration {
   final String apiKey = 'YOUR_API_KEY_HERE';

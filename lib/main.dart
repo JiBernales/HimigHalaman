@@ -1,9 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'myplants.dart';
+import 'settings/theme.dart'; // Import your ThemeManager
+import 'myplants.dart'; // Import your MyPlantsPage
+import 'package:provider/provider.dart'; // Add Provider for state management
 
 void main() {
-  runApp(const HimigHalamanApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeManager(),
+      child: const HimigHalamanApp(),
+    ),
+  );
 }
 
 class HimigHalamanApp extends StatelessWidget {
@@ -11,9 +18,18 @@ class HimigHalamanApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    final themeManager = Provider.of<ThemeManager>(context);
+
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoadingScreen(),
+      theme: AppThemes.lightTheme, // Light theme configuration
+      darkTheme: AppThemes.darkTheme, // Dark theme configuration
+      themeMode: themeManager.themeMode, // Apply current theme
+      initialRoute: '/', // Define the initial route
+      routes: {
+        '/': (context) => const LoadingScreen(), // Loading screen as the initial screen
+        '/myplants': (context) => const MyPlantsPage(), // Navigate to MyPlantsPage
+      },
     );
   }
 }
@@ -26,41 +42,26 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  double _progressValue = 0.0; // Track progress value
-  late Timer _timer; // Timer for progress updates
+  double _progressValue = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _startLoading();
+    _simulateLoading();
   }
 
-  /// Starts the loading animation and navigates when complete
-  void _startLoading() {
-    _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+  Future<void> _simulateLoading() async {
+    for (int i = 0; i < 100; i++) {
+      await Future.delayed(const Duration(milliseconds: 50));
       setState(() {
-        _progressValue += 0.005; // Increment progress
-        if (_progressValue >= 1.0) {
-          _progressValue = 1.0; // Cap at 1.0
-          _timer.cancel(); // Stop the timer
-          _navigateToNextScreen(); // Navigate to next screen
-        }
+        _progressValue = (i + 1) / 100.0; // Update progress value
       });
-    });
+    }
+    _navigateToNextScreen(); // Once loading is complete, navigate to the next screen
   }
 
-  /// Navigates to the MyPlants screen after loading
   void _navigateToNextScreen() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MyPlantsPage()),
-    );
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel(); // Cancel timer to avoid leaks
-    super.dispose();
+    Navigator.pushReplacementNamed(context, '/myplants'); // Use named routes
   }
 
   @override
@@ -72,10 +73,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
           Container(
             decoration: BoxDecoration(
               image: const DecorationImage(
-                image: AssetImage('assets/background.png'), // Replace with valid image path
+                image: AssetImage('assets/background.png'), // Ensure the path is correct
                 fit: BoxFit.cover,
               ),
-              color: Colors.black.withOpacity(0.5), // Dark overlay for readability
+              color: Colors.black.withOpacity(0.5),
               backgroundBlendMode: BlendMode.darken,
             ),
           ),
@@ -84,7 +85,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Welcome Text
                 const Text(
                   'WELCOME',
                   style: TextStyle(
@@ -94,13 +94,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // App Icon (Replace with your app logo)
                 const CircleAvatar(
                   radius: 50,
-                  backgroundImage: AssetImage('assets/icon.png'), // Replace with valid image path
+                  backgroundImage: AssetImage('assets/icon.png'), // Ensure the path is correct
                 ),
                 const SizedBox(height: 20),
-                // App Name
                 const Text(
                   'Himig Halaman',
                   style: TextStyle(
@@ -110,17 +108,16 @@ class _LoadingScreenState extends State<LoadingScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                // Loading Bar
+                // Loading Progress Indicator
                 SizedBox(
                   width: 200,
                   child: LinearProgressIndicator(
-                    value: _progressValue,
+                    value: _progressValue, // Bind progress value
                     color: Colors.greenAccent,
                     backgroundColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Loading Text
                 const Text(
                   'Loading...',
                   style: TextStyle(

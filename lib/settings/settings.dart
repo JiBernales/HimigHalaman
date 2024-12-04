@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'language.dart';
+import 'theme.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -6,23 +8,19 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FBEA), // Light greenish background color
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Dynamic background color
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor, // Use theme's app bar color
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF376F47)),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
           onPressed: () {
             Navigator.pop(context); // Navigate back
           },
         ),
-        title: const Text(
+        title: Text(
           "Settings",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF376F47),
-          ),
+          style: Theme.of(context).textTheme.titleLarge, // Use theme's text style
         ),
         centerTitle: true,
       ),
@@ -30,14 +28,16 @@ class SettingsPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
         children: [
           // General Section
-          buildSectionTitle("General"),
+          buildSectionTitle(context, "General"),
           buildListTile(
             context,
             title: "Notifications",
             icon: Icons.notifications,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const NotificationsPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationsPage()),
+              );
             },
           ),
           buildListTile(
@@ -45,8 +45,10 @@ class SettingsPage extends StatelessWidget {
             title: "Language",
             icon: Icons.language,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const LanguagePage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LanguagePage()),
+              );
             },
           ),
           buildListTile(
@@ -54,20 +56,24 @@ class SettingsPage extends StatelessWidget {
             title: "Location",
             icon: Icons.location_on,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const LocationPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LocationPage()),
+              );
             },
           ),
 
           // Personalization Section
-          buildSectionTitle("Personalization"),
+          buildSectionTitle(context, "Personalization"),
           buildListTile(
             context,
             title: "Font Size",
             icon: Icons.text_fields,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const FontSizePage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FontSizePage()),
+              );
             },
           ),
           buildListTile(
@@ -75,20 +81,24 @@ class SettingsPage extends StatelessWidget {
             title: "Light/Dark Mode",
             icon: Icons.brightness_4,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const ThemeModePage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ThemeModePage()),
+              );
             },
           ),
 
           // More Section
-          buildSectionTitle("More"),
+          buildSectionTitle(context, "More"),
           buildListTile(
             context,
             title: "About Us",
             icon: Icons.info,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const AboutUsPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AboutUsPage()),
+              );
             },
           ),
           buildListTile(
@@ -96,8 +106,10 @@ class SettingsPage extends StatelessWidget {
             title: "Privacy Notice",
             icon: Icons.lock,
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const PrivacyNoticePage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PrivacyNoticePage()),
+              );
             },
           ),
           buildListTile(
@@ -106,9 +118,9 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.description,
             onTap: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const TermsAndConditionsPage()));
+                context,
+                MaterialPageRoute(builder: (context) => const TermsAndConditionsPage()),
+              );
             },
           ),
         ],
@@ -117,16 +129,14 @@ class SettingsPage extends StatelessWidget {
   }
 
   // Section Title Widget
-  Widget buildSectionTitle(String title) {
+  Widget buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 18,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          color: Color(0xFF376F47),
-        ),
+        ), // Dynamic text style
       ),
     );
   }
@@ -139,27 +149,26 @@ class SettingsPage extends StatelessWidget {
         required VoidCallback onTap,
       }) {
     return Card(
-      color: const Color(0xFFEAF3DF), // Light green tile color
+      color: Theme.of(context).cardColor, // Dynamic card color
       elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 5.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF376F47), size: 28),
+        leading: Icon(icon, color: Theme.of(context).iconTheme.color, size: 28),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF376F47),
-          ),
+          style: Theme.of(context).textTheme.bodyLarge, // Dynamic text style
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Color(0xFF376F47), size: 18),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          color: Theme.of(context).iconTheme.color,
+          size: 18,
+        ),
         onTap: onTap,
       ),
     );
   }
 }
-
 // Dummy Pages for Navigation
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
@@ -173,29 +182,7 @@ class NotificationsPage extends StatelessWidget {
   }
 }
 
-class LanguagePage extends StatelessWidget {
-  const LanguagePage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Language"), backgroundColor: Colors.green),
-      body: const Center(child: Text("Language Page")),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Profile"), backgroundColor: Colors.green),
-      body: const Center(child: Text("Profile Page")),
-    );
-  }
-}
 
 class LocationPage extends StatelessWidget {
   const LocationPage({super.key});
@@ -217,18 +204,6 @@ class FontSizePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Font Size"), backgroundColor: Colors.green),
       body: const Center(child: Text("Font Size Page")),
-    );
-  }
-}
-
-class ThemeModePage extends StatelessWidget {
-  const ThemeModePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Theme Mode"), backgroundColor: Colors.green),
-      body: const Center(child: Text("Theme Mode Page")),
     );
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class Plant {
   final int? id;
   final String plantName;
   final double probability;
-  final String imagePath;
+  String imagePath; // Changed from `final` to allow updates
   bool waterNeeded;
   bool sunlightNeeded;
   bool isFavorite;
@@ -40,7 +42,6 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green.shade400,
         title: Text(plant.plantName),
         actions: [
           IconButton(
@@ -60,8 +61,10 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
         child: Column(
           children: [
             // Plant image
-            Image.asset(
-              plant.imagePath,
+            Image(
+              image: plant.imagePath.startsWith('/')
+                  ? FileImage(File(plant.imagePath)) // Local image
+                  : AssetImage(plant.imagePath) as ImageProvider, // Asset image
               width: double.infinity,
               height: 250,
               fit: BoxFit.cover,
@@ -106,12 +109,26 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
                   backgroundColor: Colors.green,
                   minimumSize: const Size.fromHeight(50),
                 ),
-                onPressed: () {
-                  // Handle update photo logic
+                onPressed: () async {
+                  final ImagePicker picker = ImagePicker();
+                  final XFile? pickedImage = await picker.pickImage(
+                    source: ImageSource.gallery, // Can also use ImageSource.camera
+                  );
+
+                  if (pickedImage != null) {
+                    setState(() {
+                      plant.imagePath = pickedImage.path; // Update the image path
+                    });
+                  } else {
+                    // Handle when no image is selected
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No image selected.')),
+                    );
+                  }
                 },
                 child: const Text(
                   "Update plant photo",
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
