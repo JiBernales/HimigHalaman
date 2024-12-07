@@ -60,23 +60,8 @@ class ProfilePage extends StatelessWidget {
                       onPressed: () {},
                     ),
                     ProfileButton(
-                      icon: Icons.phone,
-                      label: "Phone Number",
-                      onPressed: () {},
-                    ),
-                    ProfileButton(
                       icon: Icons.email,
                       label: "Email",
-                      onPressed: () {},
-                    ),
-                    ProfileButton(
-                      icon: Icons.facebook,
-                      label: "Facebook",
-                      onPressed: () {},
-                    ),
-                    ProfileButton(
-                      icon: Icons.camera_alt,
-                      label: "Instagram",
                       onPressed: () {},
                     ),
                     ProfileButton(
