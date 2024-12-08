@@ -1,29 +1,32 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class Plant {
-  final int? id;
   final String plantName;
   final double probability;
-  String imagePath; // Changed from `final` to allow updates
+  String imagePath;
   bool waterNeeded;
   bool sunlightNeeded;
   bool isFavorite;
-  final List<String> tasks; // Add tasks
-  final List<bool> taskStatus; // Add task status
+  final String description;
+  final List<String> commonNames;
+  final List<String> synonyms;
+  final List<String> tasks;
+  final List<bool> taskStatus;
 
   Plant({
-    this.id,
     required this.plantName,
     required this.probability,
     required this.imagePath,
-    this.waterNeeded = true,
-    this.sunlightNeeded = true,
-    this.isFavorite = false,
-    required this.tasks, // Required tasks
-    required this.taskStatus, // Required task status
+    required this.waterNeeded,
+    required this.sunlightNeeded,
+    required this.isFavorite,
+    required this.description,
+    required this.commonNames,
+    required this.synonyms,
+    required this.tasks,
+    required this.taskStatus,
   });
 }
 
@@ -61,11 +64,13 @@ class _PlantDetailPageState extends State<PlantDetailPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Plant image
+            // Plant image handling
             Image(
               image: plant.imagePath.startsWith('/')
                   ? FileImage(File(plant.imagePath)) // Local image
-                  : AssetImage(plant.imagePath) as ImageProvider, // Asset image
+                  : plant.imagePath.startsWith('assets')
+                  ? AssetImage(plant.imagePath) as ImageProvider // Asset image
+                  : NetworkImage(plant.imagePath) as ImageProvider, // Network image (if URL)
               width: double.infinity,
               height: 250,
               fit: BoxFit.cover,

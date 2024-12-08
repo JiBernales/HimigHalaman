@@ -267,6 +267,9 @@ final List<Plant> plants = [
       "Check for pests weekly"
     ],
     taskStatus: [false, false, false],
+    description: '',
+    commonNames: [],
+    synonyms: [],
   ),
   Plant(
     plantName: "Fiona",
@@ -281,5 +284,8 @@ final List<Plant> plants = [
       "Prune monthly"
     ],
     taskStatus: [false, false, false],
+    description: '',
+    commonNames: [],
+    synonyms: [],
   ),
 ];

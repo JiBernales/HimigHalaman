@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'api_integration.dart';
 import '../plant.dart';
 import 'dart:convert';
@@ -23,23 +24,27 @@ class CameraScreenState extends State<CameraScreen> {
 
   Future<void> initCamera() async {
     try {
-      final cameras = await availableCameras();
-      // Use the back camera if available
-      final backCamera = cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back,
-        orElse: () => cameras.first,
-      );
-      cameraController = CameraController(
-        backCamera,
-        ResolutionPreset.medium,
-      );
-      await cameraController?.initialize();
-      if (mounted) {
-        setState(() {});
+      // Request camera permission
+      await Permission.camera.request();
+      if (await Permission.camera.isGranted) {
+        final cameras = await availableCameras();
+        final backCamera = cameras.firstWhere(
+              (camera) => camera.lensDirection == CameraLensDirection.back,
+          orElse: () => cameras.first,
+        );
+        cameraController = CameraController(
+          backCamera,
+          ResolutionPreset.medium,
+        );
+        await cameraController?.initialize();
+        if (mounted) {
+          setState(() {});
+        }
+      } else {
+        _showErrorDialog("Camera permission is required.");
       }
     } catch (e) {
-      print("Camera initialization failed: $e");
-      _showErrorDialog("Failed to initialize the camera. Ensure permissions are granted.");
+      _showErrorDialog("Failed to initialize the camera: $e");
     }
   }
 
@@ -61,20 +66,19 @@ class CameraScreenState extends State<CameraScreen> {
         final base64Image = base64Encode(imageBytes);
 
         final apiIntegration = APIIntegration();
-        final plants = await apiIntegration.identifyPlant(base64Image);
+        final plant = await apiIntegration.identifyPlant(base64Image);
 
         setState(() {
           isScanning = false;
         });
 
-        if (plants != null && plants.isNotEmpty && mounted) {
+        if (plant != null && mounted) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PlantDetailPage(plant: plants.first),
+              builder: (context) => PlantDetailPage(plant: plant),
             ),
           );
-
         } else {
           _showErrorDialog("Plant not identified. Please try again.");
         }
@@ -85,15 +89,6 @@ class CameraScreenState extends State<CameraScreen> {
         _showErrorDialog("Error capturing or identifying plant: $e");
       }
     }
-  }
-
-  List<String> _generateTasks(Plant plant) {
-    // Example task generation logic
-    return [
-      "Water every ${plant.waterNeeded ? 'day' : 'other day'}",
-      "Place in ${plant.sunlightNeeded ? 'direct sunlight' : 'indirect sunlight'}",
-      "Monitor for pests weekly",
-    ];
   }
 
   void _showErrorDialog(String message) {
