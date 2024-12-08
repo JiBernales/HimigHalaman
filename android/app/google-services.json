@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "549462902015",
+    "project_id": "himighalaman-3b873",
+    "storage_bucket": "himighalaman-3b873.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:549462902015:android:744c531913b19b0a25b8ca",
+        "android_client_info": {
+          "package_name": "Himig.Halaman"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "549462902015-7aakr30p25ga8oas0ch71aqa1n05umon.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmNIDYiZhl5KphDyYMTeaBH64puggqO-o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "549462902015-7aakr30p25ga8oas0ch71aqa1n05umon.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:549462902015:android:e331e58417b4ed2a25b8ca",
+        "android_client_info": {
+          "package_name": "Himig.Halaman"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "549462902015-7aakr30p25ga8oas0ch71aqa1n05umon.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmNIDYiZhl5KphDyYMTeaBH64puggqO-o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "549462902015-7aakr30p25ga8oas0ch71aqa1n05umon.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

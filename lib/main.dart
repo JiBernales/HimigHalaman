@@ -1,20 +1,34 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'settings/theme.dart'; // Import your ThemeManager
+import 'login.dart';
 import 'myplants.dart'; // Import your MyPlantsPage
 import 'package:provider/provider.dart'; // Add Provider for state management
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  FirebaseAuth auth = FirebaseAuth.instance;
+  User? user = auth.currentUser;
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeManager(),
-      child: const HimigHalamanApp(),
+      child: HimigHalamanApp(initialRoute: user != null ? '/myplants' : '/'),
     ),
   );
 }
 
 class HimigHalamanApp extends StatelessWidget {
-  const HimigHalamanApp({super.key});
+  const HimigHalamanApp({super.key, required String this.initialRoute});
+
+  final String initialRoute;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +39,7 @@ class HimigHalamanApp extends StatelessWidget {
       theme: AppThemes.lightTheme, // Light theme configuration
       darkTheme: AppThemes.darkTheme, // Dark theme configuration
       themeMode: themeManager.themeMode, // Apply current theme
-      initialRoute: '/', // Define the initial route
+      initialRoute: initialRoute,
       routes: {
         '/': (context) => const LoadingScreen(), // Loading screen as the initial screen
         '/myplants': (context) => const MyPlantsPage(), // Navigate to MyPlantsPage
@@ -57,7 +71,20 @@ class _LoadingScreenState extends State<LoadingScreen> {
         _progressValue = (i + 1) / 100.0; // Update progress value
       });
     }
-    _navigateToNextScreen(); // Once loading is complete, navigate to the next screen
+    _checkLoginStatus();
+  }
+
+  void _checkLoginStatus() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      _navigateToNextScreen();
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
   }
 
   void _navigateToNextScreen() {

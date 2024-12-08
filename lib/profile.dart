@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -67,13 +68,14 @@ class ProfilePage extends StatelessWidget {
                     ProfileButton(
                       icon: Icons.logout,
                       label: "Log Out",
-                      onPressed: () {
-                        // Handle log out
+                      onPressed: () async {
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.pushReplacementNamed(context, '/');
                       },
                       iconColor: Colors.red.withOpacity(1), // Darker color for log out
-                      textColor: Colors.red.withOpacity(1), // Use red with the desired opacity
-                      // Darker color for text
+                      textColor: Colors.red.withOpacity(1), // Darker color for text
                     ),
+
                   ],
                 ),
               ),
