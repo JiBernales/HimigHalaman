@@ -113,8 +113,12 @@ class WikipediaImageFetcher {
   final String wikipediaApiUrl = 'https://en.wikipedia.org/w/api.php';
 
   Future<String?> getImageFromWikipedia(String wikipediaUrl) async {
+    // Extract the page title from the Wikipedia URL
+    final Uri parsedUrl = Uri.parse(wikipediaUrl);
+    final pageTitle = parsedUrl.pathSegments.last;
+
     final url = Uri.parse(
-      '$wikipediaApiUrl?action=parse&format=json&page=$wikipediaUrl&prop=text',
+      '$wikipediaApiUrl?action=parse&format=json&page=$pageTitle&prop=text',
     );
 
     try {
@@ -128,6 +132,13 @@ class WikipediaImageFetcher {
       }
 
       final data = json.decode(response.body);
+
+      // Check if 'parse' and 'text' fields are available
+      if (data['parse'] == null || data['parse']['text'] == null) {
+        print("Error: No valid text found in Wikipedia page.");
+        return null;
+      }
+
       final pageHtml = data['parse']['text']['*'] as String;
 
       // Parse the HTML content
@@ -150,3 +161,4 @@ class WikipediaImageFetcher {
     }
   }
 }
+

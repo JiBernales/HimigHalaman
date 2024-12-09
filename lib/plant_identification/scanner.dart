@@ -46,8 +46,7 @@ class _PlantScannerPageState extends State<PlantScannerPage> with TickerProvider
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile = await picker.pickImage(
-        source: ImageSource.gallery);
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -57,20 +56,52 @@ class _PlantScannerPageState extends State<PlantScannerPage> with TickerProvider
       // Convert the image to Base64
       final base64Image = base64Encode(_imageFile!.readAsBytesSync());
 
-      // Call the API with the Base64 image
-      final apiIntegration = APIIntegration();
-      final plant = await apiIntegration.identifyPlant(base64Image);
-
-      if (plant != null) {
-        // Pass the plant data to the ResultsPage
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ResultsPage(scannedImageUrl: base64Image),
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,  // Prevent dismissal by tapping outside
+        builder: (context) => const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Identifying plant...",
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ],
           ),
-        );
-      } else {
-        print('Failed to identify plant.');
+        ),
+      );
+
+      try {
+        // Call the API with the Base64 image
+        final apiIntegration = APIIntegration();
+        final plant = await apiIntegration.identifyPlant(base64Image);
+
+        if (plant != null) {
+          // Dismiss the loading dialog
+          Navigator.pop(context);
+
+          // Pass the plant data to the ResultsPage
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResultsPage(scannedImageUrl: base64Image),
+            ),
+          );
+        } else {
+          // Dismiss the loading dialog and show an error
+          Navigator.pop(context);
+          print('Failed to identify plant.');
+        }
+      } catch (e) {
+        // Dismiss the loading dialog in case of an error
+        Navigator.pop(context);
+        print('Error during plant identification: $e');
       }
     }
   }

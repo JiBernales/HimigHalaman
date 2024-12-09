@@ -1,11 +1,15 @@
-
 import 'package:flutter/material.dart';
-import 'plant.dart';
-import 'navbar.dart';
-import 'plant_identification/scanner.dart';
-import 'profile.dart';
-import 'settings/settings.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:himig_halaman/plant.dart';
+import 'package:himig_halaman/plant_identification/scanner.dart';
+import 'package:himig_halaman/profile.dart';
+import 'package:himig_halaman/settings/settings.dart';
+import 'dart:io'; // For FileImage
+import 'package:image_picker/image_picker.dart';
+
 import 'explore.dart';
+import 'navbar.dart'; // For image picker
 
 class MyPlantsPage extends StatefulWidget {
   final List<Plant> initialPlants;
@@ -21,35 +25,60 @@ class MyPlantsPage extends StatefulWidget {
 
 class _MyPlantsPageState extends State<MyPlantsPage> {
   late List<Plant> _plants;
+  bool _isLoading = true;
+  String _loadingMessage = "Fetching your garden...";
 
   @override
   void initState() {
     super.initState();
-    _plants = List.from(widget.initialPlants)..addAll(plants);
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      fetchUserGarden(userId);
+    }
   }
 
-  void addPlant(Plant plant) {
-    setState(() {
-      _plants.add(plant);
-    });
+  Future<void> fetchUserGarden(String userId) async {
+    try {
+      final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
+      final snapshot = await userDoc.get();
+
+      if (snapshot.exists && snapshot.data() != null) {
+        final gardenData = snapshot.data()!['garden'] as List<dynamic>? ?? [];
+        setState(() {
+          _plants = gardenData.map((data) => Plant.fromJson(data)).toList();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _loadingMessage = "Your garden is empty!";
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _loadingMessage = "Error fetching garden: $e";
+        _isLoading = false;
+      });
+    }
   }
 
-  void toggleWaterNeeded(Plant plant) {
+  // Update plant list when image is changed
+  void updatePlantImage(int index, String newImagePath) {
     setState(() {
-      plant.waterNeeded = !plant.waterNeeded;
+      _plants[index].imagePath = newImagePath;
     });
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      saveGardenToFirestore(userId);
+    }
   }
 
-  void toggleSunlightNeeded(Plant plant) {
-    setState(() {
-      plant.sunlightNeeded = !plant.sunlightNeeded;
-    });
-  }
-
-  void toggleFavorite(Plant plant) {
-    setState(() {
-      plant.isFavorite = !plant.isFavorite;
-    });
+  Future<void> saveGardenToFirestore(String userId) async {
+    final gardenData = _plants.map((plant) => plant.toJson()).toList();
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .update({'garden': gardenData});
   }
 
   @override
@@ -58,12 +87,25 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
+      body: _isLoading
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(
+              _loadingMessage,
+              style: theme.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      )
+          : SafeArea(
         child: Column(
           children: [
-            // Header
-            HeaderSection(),
-            // Plant List
+            const HeaderSection(),
             Expanded(
               child: ListView.builder(
                 itemCount: _plants.length,
@@ -74,6 +116,9 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
                     onFavoriteToggle: () => toggleFavorite(plant),
                     onWaterToggle: () => toggleWaterNeeded(plant),
                     onSunlightToggle: () => toggleSunlightNeeded(plant),
+                    onImageUpdated: (newImagePath) {
+                      updatePlantImage(index, newImagePath);
+                    },
                   );
                 },
               ),
@@ -99,6 +144,36 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
       ),
     );
   }
+
+  // Toggle water needed, sunlight needed, and favorite status
+  void toggleWaterNeeded(Plant plant) {
+    setState(() {
+      plant.waterNeeded = !plant.waterNeeded;
+    });
+    _updateFirestore();
+  }
+
+  void toggleSunlightNeeded(Plant plant) {
+    setState(() {
+      plant.sunlightNeeded = !plant.sunlightNeeded;
+    });
+    _updateFirestore();
+  }
+
+  void toggleFavorite(Plant plant) {
+    setState(() {
+      plant.isFavorite = !plant.isFavorite;
+    });
+    _updateFirestore();
+  }
+
+  // Helper function to update Firestore data
+  void _updateFirestore() {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      saveGardenToFirestore(userId);
+    }
+  }
 }
 
 // Header Section Widget
@@ -114,7 +189,6 @@ class HeaderSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile and Settings Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -138,7 +212,6 @@ class HeaderSection extends StatelessWidget {
               ),
             ],
           ),
-          // Title
           const Text(
             "My Garden",
             style: TextStyle(
@@ -158,6 +231,7 @@ class PlantCard extends StatelessWidget {
   final VoidCallback onFavoriteToggle;
   final VoidCallback onWaterToggle;
   final VoidCallback onSunlightToggle;
+  final Function(String) onImageUpdated;  // Callback for image update
 
   const PlantCard({
     super.key,
@@ -165,6 +239,7 @@ class PlantCard extends StatelessWidget {
     required this.onFavoriteToggle,
     required this.onWaterToggle,
     required this.onSunlightToggle,
+    required this.onImageUpdated,  // Initialize the callback
   });
 
   @override
@@ -176,7 +251,10 @@ class PlantCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => PlantDetailPage(plant: plant)),
-        );
+        ).then((_) {
+          // After returning from PlantDetailPage, refresh the image if it was updated
+          onImageUpdated(plant.imagePath);  // Notify the parent
+        });
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -189,20 +267,29 @@ class PlantCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
+              child: plant.imagePath.isNotEmpty
+                  ? plant.imagePath.startsWith('http')  // Check if it's a network image
+                  ? Image.network(
                 plant.imagePath,
                 height: 70,
                 width: 70,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.image_not_supported,
-                  size: 70,
-                  color: theme.iconTheme.color,
-                ),
+              )
+                  : Image.file(
+                File(plant.imagePath),
+                height: 70,
+                width: 70,
+                fit: BoxFit.cover,
+              )
+                  : Image.asset(
+                'assets/placeholder.png',
+                height: 70,
+                width: 70,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(
+            Expanded( // Wrapping the text in Expanded to avoid overflow
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -252,40 +339,3 @@ class PlantCard extends StatelessWidget {
     );
   }
 }
-// Example Plant Data
-final List<Plant> plants = [
-  Plant(
-    plantName: "Spider Plant",
-    imagePath: "assets/spider_plant.png",
-    probability: 5.0,
-    waterNeeded: true,
-    sunlightNeeded: true,
-    isFavorite: false,
-    tasks: [
-      "Water daily",
-      "Place in indirect sunlight",
-      "Check for pests weekly"
-    ],
-    taskStatus: [false, false, false],
-    description: '',
-    commonNames: [],
-    synonyms: [],
-  ),
-  Plant(
-    plantName: "Fiona",
-    imagePath: "assets/fiona.png",
-    probability: 80.0,
-    waterNeeded: true,
-    sunlightNeeded: false,
-    isFavorite: false,
-    tasks: [
-      "Water every other day",
-      "Place in shaded area",
-      "Prune monthly"
-    ],
-    taskStatus: [false, false, false],
-    description: '',
-    commonNames: [],
-    synonyms: [],
-  ),
-];

@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
@@ -8,85 +8,46 @@ class LoginScreen extends StatelessWidget {
 
   LoginScreen({super.key});
 
-  Future<void> _loginUser(BuildContext context) async {
-    try {
-      final email = emailController.text.trim();
-      final password = passwordController.text.trim();
+  Future<void> _authenticateUser(BuildContext context, bool isLogin) async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-      if (email.isEmpty || password.isEmpty) {
-        _showErrorDialog(context, "Please fill in all fields.");
-        return;
-      }
-
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      _redirectToMyPlants(context);
-    } on FirebaseAuthException catch (e) {
-      _showErrorDialog(context, e.message ?? "Login failed.");
+    if (email.isEmpty || password.isEmpty) {
+      _showErrorDialog(context, "Please fill in all fields.");
+      return;
     }
-  }
 
-  Future<void> _registerUser(BuildContext context) async {
     try {
-      final email = emailController.text.trim();
-      final password = passwordController.text.trim();
-
-      if (email.isEmpty || password.isEmpty) {
-        _showErrorDialog(context, "Please fill in all fields.");
-        return;
-      }
-
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential;
+      if (isLogin) {
+        userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
-        _redirectToMyPlants(context);
-      } on FirebaseAuthException catch (e) {
-        _showErrorDialog(context, e.message ?? "Login failed.");
+      } else {
+        userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // Save additional user info to Firestore for new users
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+          'username': 'Anonymous', // You can allow users to set this later
+          'email': email,
+          'profilePicture': '', // Placeholder for now
+          'garden': [], // Initialize an empty garden
+        });
       }
+
+      _redirectToMyPlants(context);
     } on FirebaseAuthException catch (e) {
-      _showErrorDialog(context, e.message ?? "Registration failed.");
+      _showErrorDialog(context, e.message ?? "Authentication failed.");
     }
   }
 
-  /* Future<void> _loginUserGoogle(BuildContext context) async {
-    try {
-      // Initiate the Google Sign-In process
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        // User canceled the sign-in process
-        return;
-      }
-
-      // Retrieve authentication details from Google
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
-
-      // Create a credential for Firebase
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in to Firebase with the Google credential
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      // Redirect to '/myplants'
-      Navigator.pushReplacementNamed(context, '/myplants');
-    } on FirebaseAuthException catch (e) {
-      _showErrorDialog(context, e.message ?? "Google Sign-In failed.");
-    } catch (e) {
-      _showErrorDialog(context, "An error occurred. Please try again.");
-    }
-  } */
 
   Future<void> _guestLogin(BuildContext context) async {
     await FirebaseAuth.instance.signInAnonymously();
@@ -116,12 +77,13 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.green.shade300,
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 50),
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.green.shade700,
@@ -132,87 +94,33 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: "Email",
-                  //hintText: "Phone Number or Email",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              _buildTextField("Email", emailController),
               const SizedBox(height: 16),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: "Password",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              _buildTextField("Password", passwordController, isPassword: true),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _loginUser(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text("Login"),
+              _buildActionButton(
+                context,
+                label: "Login",
+                onPressed: () => _authenticateUser(context, true),
               ),
               const SizedBox(height: 8),
               const Text("or"),
               const SizedBox(height: 8),
-              /*
-              ElevatedButton.icon(
-                onPressed: () => _signInWithGoogle(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                icon: const Icon(Icons.g_mobiledata, color: Colors.white),
-                label: const Text("Continue with Google"),
-              ),
-              */
-              ElevatedButton(
-                onPressed: () => Navigator.pushReplacement(
+              _buildActionButton(
+                context,
+                label: "Register",
+                onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => RegistrationScreen()),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text("Register"),
               ),
               const SizedBox(height: 16),
-              TextButton(
+              _buildTextButton(
+                context,
+                label: "Skip for Later",
+                color: Colors.yellow.shade300,
+                textColor: Colors.black,
                 onPressed: () => _guestLogin(context),
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.yellow.shade300,
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text(
-                  "Skip for Later",
-                  style: TextStyle(color: Colors.black),
-                ),
               ),
               const SizedBox(height: 16),
               GestureDetector(
@@ -227,10 +135,58 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(String hint, TextEditingController controller,
+      {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context,
+      {required String label, required VoidCallback onPressed}) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green.shade900,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        minimumSize: const Size(double.infinity, 50),
+      ),
+      child: Text(label),
+    );
+  }
+
+  Widget _buildTextButton(BuildContext context,
+      {required String label,
+        required VoidCallback onPressed,
+        required Color color,
+        required Color textColor}) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        backgroundColor: color,
+        minimumSize: const Size(double.infinity, 50),
+      ),
+      child: Text(label, style: TextStyle(color: textColor)),
     );
   }
 }
@@ -241,89 +197,41 @@ class RegistrationScreen extends StatelessWidget {
 
   RegistrationScreen({super.key});
 
-  Future<void> _loginUser(BuildContext context) async {
-    try {
-      final email = emailController.text.trim();
-      final password = passwordController.text.trim();
+  Future<void> _authenticateUser(BuildContext context, bool isLogin) async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-      if (email.isEmpty || password.isEmpty) {
-        _showErrorDialog(context, "Please fill in all fields.");
-        return;
-      }
-
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      _redirectToMyPlants(context);
-    } on FirebaseAuthException catch (e) {
-      _showErrorDialog(context, e.message ?? "Login failed.");
+    if (email.isEmpty || password.isEmpty) {
+      _showErrorDialog(context, "Please fill in all fields.");
+      return;
     }
-  }
 
-  Future<void> _registerUser(BuildContext context) async {
     try {
-      final email = emailController.text.trim();
-      final password = passwordController.text.trim();
-
-      if (email.isEmpty || password.isEmpty) {
-        _showErrorDialog(context, "Please fill in all fields.");
-        return;
-      }
-
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential;
+      if (isLogin) {
+        userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
-        _redirectToMyPlants(context);
-      } on FirebaseAuthException catch (e) {
-        _showErrorDialog(context, e.message ?? "Login failed.");
-      }
-    } on FirebaseAuthException catch (e) {
-      _showErrorDialog(context, e.message ?? "Registration failed.");
-    }
-  }
+      } else {
+        userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
 
-  /* Future<void> _loginUserGoogle(BuildContext context) async {
-    try {
-      // Initiate the Google Sign-In process
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        // User canceled the sign-in process
-        return;
+        // Save additional user info to Firestore for new users
+        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+          'username': '', // Placeholder
+          'email': email,
+          'profilePicture': '', // Placeholder
+          'garden': [], // Initialize empty garden
+        });
       }
 
-      // Retrieve authentication details from Google
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
-
-      // Create a credential for Firebase
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in to Firebase with the Google credential
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      // Redirect to '/myplants'
-      Navigator.pushReplacementNamed(context, '/myplants');
+      _redirectToMyPlants(context);
     } on FirebaseAuthException catch (e) {
-      _showErrorDialog(context, e.message ?? "Google Sign-In failed.");
-    } catch (e) {
-      _showErrorDialog(context, "An error occurred. Please try again.");
+      _showErrorDialog(context, e.message ?? "Authentication failed.");
     }
-  } */
-
-  Future<void> _guestLogin(BuildContext context) async {
-    await FirebaseAuth.instance.signInAnonymously();
-    _redirectToMyPlants(context);
   }
 
   void _redirectToMyPlants(BuildContext context) {
@@ -349,12 +257,13 @@ class RegistrationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.green.shade300,
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 50),
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.green.shade700,
@@ -365,73 +274,30 @@ class RegistrationScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: "Email",
-                  // hintText: "Phone Number or Email",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              _buildTextField("Email", emailController),
               const SizedBox(height: 16),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: "Password",
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              _buildTextField("Password", passwordController, isPassword: true),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _registerUser(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text("Register"),
+              _buildActionButton(
+                context,
+                label: "Register",
+                onPressed: () => _authenticateUser(context, false),
               ),
               const SizedBox(height: 8),
               const Text("or"),
               const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () => Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade900,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text("Login"),
+              _buildActionButton(
+                context,
+                label: "Login",
+                onPressed: () => Navigator.pop(context), // Navigate back to Login
               ),
               const SizedBox(height: 16),
-              TextButton(
+              _buildTextButton(
+                context,
+                label: "Skip for Later",
+                color: Colors.yellow.shade300,
+                textColor: Colors.black,
                 onPressed: () => _guestLogin(context),
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.yellow.shade300,
-                  minimumSize: const Size(double.infinity, 50),
-                ),
-                child: const Text(
-                  "Skip for Later",
-                  style: TextStyle(color: Colors.black),
-                ),
               ),
               const SizedBox(height: 16),
               GestureDetector(
@@ -446,10 +312,63 @@ class RegistrationScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildTextField(String hint, TextEditingController controller,
+      {bool isPassword = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context,
+      {required String label, required VoidCallback onPressed}) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green.shade900,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        minimumSize: const Size(double.infinity, 50),
+      ),
+      child: Text(label),
+    );
+  }
+
+  Widget _buildTextButton(BuildContext context,
+      {required String label,
+        required VoidCallback onPressed,
+        required Color color,
+        required Color textColor}) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        backgroundColor: color,
+        minimumSize: const Size(double.infinity, 50),
+      ),
+      child: Text(label, style: TextStyle(color: textColor)),
+    );
+  }
+
+  Future<void> _guestLogin(BuildContext context) async {
+    await FirebaseAuth.instance.signInAnonymously();
+    _redirectToMyPlants(context);
   }
 }

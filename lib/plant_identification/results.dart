@@ -1,8 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:himig_halaman/myplants.dart';
 import 'package:himig_halaman/plant.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'api_integration.dart'; // For parsing the JSON response
 
 class ResultsPage extends StatefulWidget {
@@ -52,6 +52,25 @@ class _ResultsPageState extends State<ResultsPage> {
     }
   }
 
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -172,7 +191,7 @@ class _ResultsPageState extends State<ResultsPage> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final newPlant = Plant(
                         plantName: plantName,
                         imagePath: imagePath,
@@ -186,14 +205,37 @@ class _ResultsPageState extends State<ResultsPage> {
                         commonNames: commonNames,
                         synonyms: synonyms,
                       );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MyPlantsPage(
-                            initialPlants: [newPlant],
-                          ),
-                        ),
-                      );
+
+                      // Save the plant to Firestore
+                      final userId = FirebaseAuth.instance.currentUser?.uid;
+                      if (userId != null) {
+                        try {
+                          final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
+
+                          // Fetch existing garden data
+                          final snapshot = await userDoc.get();
+                          List<dynamic> gardenData = snapshot.data()?['garden'] ?? [];
+
+                          // Add the new plant to the garden
+                          gardenData.add(newPlant.toJson());
+
+                          // Update Firestore
+                          await userDoc.update({'garden': gardenData});
+
+                          // Navigate to MyPlantsPage with updated garden
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MyPlantsPage(initialPlants: gardenData.map((data) => Plant.fromJson(data)).toList()),
+                            ),
+                          );
+
+                          _showSuccessDialog("Plant successfully added to your garden!");
+
+                        } catch (e) {
+                          _showErrorDialog("Error saving plant: $e");
+                        }
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF376F47),
@@ -216,6 +258,7 @@ class _ResultsPageState extends State<ResultsPage> {
     );
   }
 }
+
 
 class DiagnosisCard extends StatelessWidget {
   final IconData icon;
