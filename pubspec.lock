@@ -281,6 +281,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.10.6"
+  fixnum:
+    dependency: transitive
+    description:
+      name: fixnum
+      sha256: b6dc7065e46c974bc7c5f143080a6764ec7a4be6da1285ececdc37be96de53be
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -360,30 +368,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  google_api_availability:
-    dependency: "direct main"
-    description:
-      name: google_api_availability
-      sha256: "3e9548cfd991d983d11425a2436d5bd957d048c279cc9e145ffe3f36fd847385"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.0"
-  google_api_availability_android:
-    dependency: transitive
-    description:
-      name: google_api_availability_android
-      sha256: d95429ae78083585c312de2c6578085e7d53d100a94656d691bce0bb0ce435be
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
-  google_api_availability_platform_interface:
-    dependency: transitive
-    description:
-      name: google_api_availability_platform_interface
-      sha256: "65b7da62fe5b582bb3d508628ad827d36d890710ea274766a992a56fa5420da6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   geolocator:
     dependency: "direct main"
     description:
@@ -394,16 +378,18 @@ packages:
     version: "13.0.2"
   geolocator_android:
     dependency: transitive
-    name: geolocator_android
-    sha256: "7aefc530db47d90d0580b552df3242440a10fe60814496a979aa67aa98b1fd47"
-    url: "https://pub.dev"
+    description:
+      name: geolocator_android
+      sha256: "7aefc530db47d90d0580b552df3242440a10fe60814496a979aa67aa98b1fd47"
+      url: "https://pub.dev"
     source: hosted
     version: "4.6.1"
   geolocator_apple:
     dependency: transitive
-    name: geolocator_apple
-    sha256: "6154ea2682563f69fc0125762ed7e91e7ed85d0b9776595653be33918e064807"
-    url: "https://pub.dev"
+    description:
+      name: geolocator_apple
+      sha256: "6154ea2682563f69fc0125762ed7e91e7ed85d0b9776595653be33918e064807"
+      url: "https://pub.dev"
     source: hosted
     version: "2.3.8+1"
   geolocator_platform_interface:
@@ -430,6 +416,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.3"
+  google_api_availability:
+    dependency: "direct main"
+    description:
+      name: google_api_availability
+      sha256: "3e9548cfd991d983d11425a2436d5bd957d048c279cc9e145ffe3f36fd847385"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.0"
+  google_api_availability_android:
+    dependency: transitive
+    description:
+      name: google_api_availability_android
+      sha256: d95429ae78083585c312de2c6578085e7d53d100a94656d691bce0bb0ce435be
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  google_api_availability_platform_interface:
+    dependency: transitive
+    description:
+      name: google_api_availability_platform_interface
+      sha256: "65b7da62fe5b582bb3d508628ad827d36d890710ea274766a992a56fa5420da6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   google_identity_services_web:
     dependency: transitive
     description:
@@ -566,14 +576,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
-  js:
-    dependency: transitive
-    description:
-      name: js
-      sha256: c1b2e9b5ea78c45e1a0788d29606ba27dc5f71f019f32ca5140f61ef071838cf
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.1"
   intl:
     dependency: "direct main"
     description:
@@ -582,6 +584,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.20.1"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      sha256: c1b2e9b5ea78c45e1a0788d29606ba27dc5f71f019f32ca5140f61ef071838cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.1"
   leak_tracker:
     dependency: transitive
     description:
