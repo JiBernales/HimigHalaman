@@ -125,7 +125,7 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () {
-                  // TODO: Link to Terms and Services
+                  Navigator.pushNamed(context, '/terms');
                 },
                 child: const Text(
                   "Terms and Services",
@@ -289,7 +289,7 @@ class RegistrationScreen extends StatelessWidget {
               _buildActionButton(
                 context,
                 label: "Login",
-                onPressed: () => Navigator.pop(context), // Navigate back to Login
+                onPressed: () => Navigator.pushReplacementNamed(context, '/login') // Navigate back to Login
               ),
               const SizedBox(height: 16),
               _buildTextButton(
@@ -302,7 +302,7 @@ class RegistrationScreen extends StatelessWidget {
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () {
-                  // TODO: Link to Terms and Services
+                  Navigator.pushNamed(context, '/terms');
                 },
                 child: const Text(
                   "Terms and Services",

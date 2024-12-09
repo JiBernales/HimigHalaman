@@ -25,13 +25,23 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
   late List<Plant> _plants = [];
   bool _isLoading = true;
   String _loadingMessage = "Fetching your garden...";
+  bool _isAnonymous = false;
 
   @override
   void initState() {
     super.initState();
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null) {
-      fetchUserGarden(userId);
+    final user = FirebaseAuth.instance.currentUser;
+    _isAnonymous = user?.isAnonymous ?? true; // Check if the user is anonymous
+
+    if (!_isAnonymous) {
+      final userId = user?.uid;
+      if (userId != null) {
+        fetchUserGarden(userId);
+      }
+    } else {
+      setState(() {
+        _isLoading = false; // Skip loading since no fetch is needed for anonymous users
+      });
     }
   }
 
@@ -105,7 +115,25 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
           children: [
             const HeaderSection(),
             Expanded(
-              child: ListView.builder(
+              child: _isAnonymous
+                  ? Center(
+                child: Text(
+                  "Register for an account to save your plants to your garden.",
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+                  : _plants.isEmpty
+                  ? Center(
+                child: Text(
+                  "Your garden is empty!",
+                  style: theme.textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
+              )
+                  : ListView.builder(
                 itemCount: _plants.length,
                 itemBuilder: (context, index) {
                   final plant = _plants[index];

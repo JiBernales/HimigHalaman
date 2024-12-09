@@ -192,23 +192,30 @@ class _ResultsPageState extends State<ResultsPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
-                      final newPlant = Plant(
-                        plantName: plantName,
-                        imagePath: imagePath,
-                        probability: 95.0,
-                        waterNeeded: true,
-                        sunlightNeeded: true,
-                        isFavorite: false,
-                        tasks: ["Water regularly", "Provide indirect sunlight"],
-                        taskStatus: [false, false],
-                        description: description,
-                        commonNames: commonNames,
-                        synonyms: synonyms,
-                      );
-
-                      // Save the plant to Firestore
                       final userId = FirebaseAuth.instance.currentUser?.uid;
-                      if (userId != null) {
+                      final isAnonymous = FirebaseAuth.instance.currentUser?.isAnonymous ?? false;
+
+                      if (isAnonymous || userId == null) {
+                        // If the user is anonymous, show a message prompt
+                        _showErrorDialog(
+                          "This feature is only for registered accounts. Create an account to unlock this feature.",
+                        );
+                      } else {
+                        // Proceed to add the plant for registered users
+                        final newPlant = Plant(
+                          plantName: plantName,
+                          imagePath: imagePath,
+                          probability: 95.0,
+                          waterNeeded: true,
+                          sunlightNeeded: true,
+                          isFavorite: false,
+                          tasks: ["Water regularly", "Provide indirect sunlight"],
+                          taskStatus: [false, false],
+                          description: description,
+                          commonNames: commonNames,
+                          synonyms: synonyms,
+                        );
+
                         try {
                           final userDoc = FirebaseFirestore.instance.collection('users').doc(userId);
 
@@ -226,12 +233,13 @@ class _ResultsPageState extends State<ResultsPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MyPlantsPage(initialPlants: gardenData.map((data) => Plant.fromJson(data)).toList()),
+                              builder: (context) => MyPlantsPage(
+                                initialPlants: gardenData.map((data) => Plant.fromJson(data)).toList(),
+                              ),
                             ),
                           );
 
                           _showSuccessDialog("Plant successfully added to your garden!");
-
                         } catch (e) {
                           _showErrorDialog("Error saving plant: $e");
                         }

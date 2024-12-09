@@ -201,7 +201,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   label: "Register",
                   onPressed: () {
                     // Navigate to the login page (you can adjust the route if necessary)
-                    Navigator.pushReplacementNamed(context, '/login');
+                    Navigator.pushReplacementNamed(context, '/register');
                   },
                   iconColor: Colors.blue,
                   textColor: Colors.blue,

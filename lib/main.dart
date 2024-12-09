@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:himig_halaman/settings/termsandservices.dart';
 import 'settings/theme.dart'; // Import your ThemeManager
 import 'login.dart';
 import 'myplants.dart'; // Import your MyPlantsPage
@@ -14,21 +15,16 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  FirebaseAuth auth = FirebaseAuth.instance;
-  User? user = auth.currentUser;
-
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeManager(),
-      child: HimigHalamanApp(initialRoute: user != null ? '/myplants' : '/'),
+      child: const HimigHalamanApp(),
     ),
   );
 }
 
 class HimigHalamanApp extends StatelessWidget {
-  const HimigHalamanApp({super.key, required String this.initialRoute});
-
-  final String initialRoute;
+  const HimigHalamanApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +35,13 @@ class HimigHalamanApp extends StatelessWidget {
       theme: AppThemes.lightTheme, // Light theme configuration
       darkTheme: AppThemes.darkTheme, // Dark theme configuration
       themeMode: themeManager.themeMode, // Apply current theme
-      initialRoute: initialRoute,
+      initialRoute: '/', // Always start with the LoadingScreen
       routes: {
         '/': (context) => const LoadingScreen(), // Loading screen as the initial screen
         '/myplants': (context) => const MyPlantsPage(), // Navigate to MyPlantsPage
         '/login': (context) => LoginScreen(),
+        '/register': (context) => RegistrationScreen(),
+        '/terms': (context) => const TermsAndServicesPage(),
       },
     );
   }
@@ -66,6 +64,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   Future<void> _simulateLoading() async {
+    // Simulate a loading process with a progress bar
     for (int i = 0; i < 100; i++) {
       await Future.delayed(const Duration(milliseconds: 50));
       setState(() {
@@ -79,17 +78,17 @@ class _LoadingScreenState extends State<LoadingScreen> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      _navigateToNextScreen();
+      if (user.isAnonymous) {
+        // If the user is logged in anonymously, navigate to LoginScreen
+        Navigator.pushReplacementNamed(context, '/login');
+      } else {
+        // If the user is logged in (non-anonymous), navigate to MyPlantsPage
+        Navigator.pushReplacementNamed(context, '/myplants');
+      }
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+      // If no user is logged in, navigate to LoginScreen
+      Navigator.pushReplacementNamed(context, '/login');
     }
-  }
-
-  void _navigateToNextScreen() {
-    Navigator.pushReplacementNamed(context, '/myplants'); // Use named routes
   }
 
   @override

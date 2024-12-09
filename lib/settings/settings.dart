@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:himig_halaman/settings/termsandservices.dart';
 import 'language.dart';
 import 'theme.dart';
 
@@ -119,7 +120,7 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const TermsAndConditionsPage()),
+                MaterialPageRoute(builder: (context) => const TermsAndServicesPage()),
               );
             },
           ),
