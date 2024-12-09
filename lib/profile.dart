@@ -172,14 +172,54 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (user!.isAnonymous) {
+      // Display only the register button if the user is anonymous
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: CircleAvatar(
+                    backgroundColor: Theme.of(context).cardColor,
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ProfileButton(
+                  icon: Icons.app_registration,
+                  label: "Register",
+                  onPressed: () {
+                    // Navigate to the login page (you can adjust the route if necessary)
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  iconColor: Colors.blue,
+                  textColor: Colors.blue,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Regular profile page content when the user is not anonymous
     if (username == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
     return Scaffold(
-      backgroundColor: Theme
-          .of(context)
-          .scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -188,14 +228,9 @@ class _ProfilePageState extends State<ProfilePage> {
               Align(
                 alignment: Alignment.topLeft,
                 child: CircleAvatar(
-                  backgroundColor: Theme
-                      .of(context)
-                      .cardColor,
+                  backgroundColor: Theme.of(context).cardColor,
                   child: IconButton(
-                    icon: Icon(Icons.arrow_back, color: Theme
-                        .of(context)
-                        .iconTheme
-                        .color),
+                    icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -205,18 +240,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundColor: Theme
-                        .of(context)
-                        .cardColor,
+                    backgroundColor: Theme.of(context).cardColor,
                     child: _buildProfileImage(), // Use base64 image here
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: CircleAvatar(
-                      backgroundColor: Theme
-                          .of(context)
-                          .primaryColor,
+                      backgroundColor: Theme.of(context).primaryColor,
                       child: IconButton(
                         icon: const Icon(Icons.camera_alt, color: Colors.white),
                         onPressed: _pickAndUploadImage,
@@ -229,20 +260,12 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(
                 username ?? 'User Name',
                 style: TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold, color: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.color),
+                    fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color),
               ),
               const SizedBox(height: 10),
               Text(
                 user?.email ?? 'Email not available',
-                style: TextStyle(fontSize: 16, color: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.color),
+                style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color),
               ),
               const SizedBox(height: 20),
               Expanded(

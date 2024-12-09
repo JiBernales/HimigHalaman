@@ -43,6 +43,7 @@ class HimigHalamanApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoadingScreen(), // Loading screen as the initial screen
         '/myplants': (context) => const MyPlantsPage(), // Navigate to MyPlantsPage
+        '/login': (context) => LoginScreen(),
       },
     );
   }

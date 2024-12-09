@@ -6,8 +6,6 @@ import 'package:himig_halaman/plant_identification/scanner.dart';
 import 'package:himig_halaman/profile.dart';
 import 'package:himig_halaman/settings/settings.dart';
 import 'dart:io'; // For FileImage
-import 'package:image_picker/image_picker.dart';
-
 import 'explore.dart';
 import 'navbar.dart'; // For image picker
 
@@ -24,7 +22,7 @@ class MyPlantsPage extends StatefulWidget {
 }
 
 class _MyPlantsPageState extends State<MyPlantsPage> {
-  late List<Plant> _plants;
+  late List<Plant> _plants = [];
   bool _isLoading = true;
   String _loadingMessage = "Fetching your garden...";
 
