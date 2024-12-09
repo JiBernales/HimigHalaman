@@ -52,6 +52,9 @@ dependencies:
   cloud_firestore: ^5.5.1
   google_sign_in: ^6.2.2
   firebase_auth: ^5.3.4
+  weather: ^3.1.1
+  geolocator: ^13.0.2
+  intl: ^0.20.1
 
 dev_dependencies:
   flutter_test:

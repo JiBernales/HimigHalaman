@@ -25,6 +25,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FirebaseCorePluginCApi"));
   FirebaseStoragePluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FirebaseStoragePluginCApi"));
+  GeolocatorWindowsRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("GeolocatorWindows"));
   PermissionHandlerWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
   UrlLauncherWindowsRegisterWithRegistrar(
