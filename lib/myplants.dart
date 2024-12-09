@@ -6,6 +6,14 @@ import 'package:himig_halaman/plant_identification/scanner.dart';
 import 'package:himig_halaman/profile.dart';
 import 'package:himig_halaman/settings/settings.dart';
 import 'dart:io'; // For FileImage
+import 'package:weather/weather.dart';
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'plant.dart';
+import 'navbar.dart';
+import 'plant_identification/scanner.dart';
+import 'profile.dart';
+import 'settings/settings.dart';
 import 'explore.dart';
 import 'navbar.dart'; // For image picker
 
@@ -25,6 +33,8 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
   late List<Plant> _plants = [];
   bool _isLoading = true;
   String _loadingMessage = "Fetching your garden...";
+  WeatherFactory wf = new WeatherFactory("836910daaadaa62acd9d3f662a6d6e0b");
+  String cityName = "Miagao";
 
   @override
   void initState() {
@@ -79,10 +89,25 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
         .update({'garden': gardenData});
   }
 
+  Future<Map<String, dynamic>> fetchWeatherData() async {
+    Weather w = await wf.currentWeatherByCityName(cityName);
+    String? location = w.areaName;
+    String? weatherDescription = w.weatherDescription;
+    weatherDescription = weatherDescription?.replaceFirst(weatherDescription[0], weatherDescription[0].toUpperCase());
+    String? weatherIcon = w.weatherIcon;
+    double? temperature = w.temperature?.celsius;
+
+    return {
+      "location": location,
+      "description": weatherDescription,
+      "icon": weatherIcon,
+      "temperature": temperature,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: _isLoading
@@ -104,6 +129,28 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
         child: Column(
           children: [
             const HeaderSection(),
+            // Header
+            HeaderSection(),
+            FutureBuilder<Map<String, dynamic>>(
+              future: fetchWeatherData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Text("Error loading weather data");
+                } else {
+                  final data = snapshot.data!;
+                  return WeatherCard(
+                    location: data['location'] as String,
+                    weatherDescription: data['description'] as String,
+                    weatherIcon: data['icon'] as String,
+                    temperature: data['temperature'] as double,
+                  );
+                }
+              },
+            ),
+
+            // Plant List
             Expanded(
               child: ListView.builder(
                 itemCount: _plants.length,
@@ -222,6 +269,77 @@ class HeaderSection extends StatelessWidget {
     );
   }
 }
+
+class WeatherCard extends StatelessWidget {
+  final String location;
+  final String weatherDescription;
+  final String weatherIcon;
+  final double temperature;
+
+  const WeatherCard({
+    super.key,
+    required this.location,
+    required this.weatherDescription,
+    required this.weatherIcon,
+    required this.temperature,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    String iconHTML1 = "https://openweathermap.org/img/wn/";
+    String iconHTML2 = "@2x.png";
+    String weatherIconHTML = iconHTML1 + weatherIcon + iconHTML2;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                location + " Weather Forecast",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                  weatherDescription,
+                  style: theme.textTheme.bodySmall
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              Image.network(
+                weatherIconHTML,
+                height: 40,
+                width: 40,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.error,
+                ),
+              ),
+              Text(
+                "${temperature.toStringAsFixed(1)}°C",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 // PlantCard Widget
 class PlantCard extends StatelessWidget {
