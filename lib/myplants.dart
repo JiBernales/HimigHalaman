@@ -128,8 +128,6 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
           : SafeArea(
         child: Column(
           children: [
-            const HeaderSection(),
-            // Header
             HeaderSection(),
             FutureBuilder<Map<String, dynamic>>(
               future: fetchWeatherData(),
