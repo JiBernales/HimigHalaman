@@ -8,6 +8,7 @@ import 'package:himig_halaman/settings/settings.dart';
 import 'dart:io'; // For FileImage
 import 'explore.dart';
 import 'navbar.dart'; // For image picker
+import 'package:weather/weather.dart';
 
 class MyPlantsPage extends StatefulWidget {
   final List<Plant> initialPlants;
@@ -26,6 +27,8 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
   bool _isLoading = true;
   String _loadingMessage = "Fetching your garden...";
   bool _isAnonymous = false;
+  WeatherFactory wf = new WeatherFactory("836910daaadaa62acd9d3f662a6d6e0b");
+  String cityName = "Miagao";
 
   @override
   void initState() {
@@ -68,6 +71,22 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<Map<String, dynamic>> fetchWeatherData() async {
+    Weather w = await wf.currentWeatherByCityName(cityName);
+    String? location = w.areaName;
+    String? weatherDescription = w.weatherDescription;
+    weatherDescription = weatherDescription?.replaceFirst(weatherDescription[0], weatherDescription[0].toUpperCase());
+    String? weatherIcon = w.weatherIcon;
+    double? temperature = w.temperature?.celsius;
+
+    return {
+      "location": location,
+      "description": weatherDescription,
+      "icon": weatherIcon,
+      "temperature": temperature,
+    };
   }
 
   // Update plant list when image is changed
@@ -115,6 +134,25 @@ class _MyPlantsPageState extends State<MyPlantsPage> {
         child: Column(
           children: [
             const HeaderSection(),
+            FutureBuilder<Map<String, dynamic>>(
+              future: fetchWeatherData(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Text("Error loading weather data");
+                } else {
+                  final data = snapshot.data!;
+                  return WeatherCard(
+                    location: data['location'] as String,
+                    weatherDescription: data['description'] as String,
+                    weatherIcon: data['icon'] as String,
+                    temperature: data['temperature'] as double,
+                  );
+                }
+              },
+            ),
+
             Expanded(
               child: _isAnonymous
                   ? Center(
@@ -245,6 +283,75 @@ class HeaderSection extends StatelessWidget {
               fontSize: 32,
               fontWeight: FontWeight.bold,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class WeatherCard extends StatelessWidget {
+  final String location;
+  final String weatherDescription;
+  final String weatherIcon;
+  final double temperature;
+
+  const WeatherCard({
+    super.key,
+    required this.location,
+    required this.weatherDescription,
+    required this.weatherIcon,
+    required this.temperature,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    String iconHTML1 = "https://openweathermap.org/img/wn/";
+    String iconHTML2 = "@2x.png";
+    String weatherIconHTML = iconHTML1 + weatherIcon + iconHTML2;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                location + " Weather Forecast",
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                  weatherDescription,
+                  style: theme.textTheme.bodySmall
+              ),
+            ],
+          ),
+          Column(
+            children: [
+              Image.network(
+                weatherIconHTML,
+                height: 40,
+                width: 40,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.error,
+                ),
+              ),
+              Text(
+                "${temperature.toStringAsFixed(1)}°C",
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ],
       ),
